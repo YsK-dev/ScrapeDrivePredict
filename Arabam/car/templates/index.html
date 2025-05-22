@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚙️ Scraper Car Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <style>
+        :root {
+            --primary-color: #18BBF7;
+            --secondary-color: #2d3436;
+            --bg-color: #f8f9fa;
+            --text-color: #212529;
+            --card-bg: #ffffff;
+            --navbar-bg: #ffffff;
+            --border-color: #e9ecef;
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #18BBF7;
+            --secondary-color: #adb5bd;
+            --bg-color: #121212;
+            --text-color: #f8f9fa;
+            --card-bg: #1e1e1e;
+            --navbar-bg: #1a1a1a;
+            --border-color: #2d3436;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        .navbar {
+            background-color: var(--navbar-bg) !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--primary-color) !important;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(24, 187, 247, 0.3);
+        }
+
+        .btn-outline-primary {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-body {
+            padding: 25px;
+        }
+
+        .card-title {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .status-indicator {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .status-active {
+            background-color: #28a745;
+            box-shadow: 0 0 10px #28a745;
+        }
+
+        .status-inactive {
+            background-color: #dc3545;
+        }
+
+        .status-processing {
+            background-color: #ffc107;
+            box-shadow: 0 0 10px #ffc107;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            transform: rotate(30deg);
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(24, 187, 247, 0.1), transparent);
+            border: 1px solid rgba(24, 187, 247, 0.2);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .progress-thin {
+            height: 6px;
+            border-radius: 3px;
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .floating-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 100;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .floating-btn:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-car"></i>
+                <span>Scraper Dashboard</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/view-data">View Data</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('predict') }}">Price Prediction</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    <button class="theme-toggle me-3" id="themeToggle">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <div class="d-flex align-items-center">
+                        <span class="status-indicator status-active me-2"></span>
+                        <span>System Online</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4 animate__animated animate__fadeIn">
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h2><i class="fas fa-tachometer-alt me-2"></i> Dashboard Overview</h2>
+                <p class="text-muted">Monitor and control your car data scraping operations</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <button id="startScraper" class="btn btn-primary btn-lg">
+                    <i class="fas fa-play me-2"></i> Start Scraper
+                </button>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="stat-card animate__animated animate__fadeInLeft">
+                    <i class="fas fa-database feature-icon"></i>
+                    <div class="stat-number" id="dataCount">1,248</div>
+                    <div class="stat-label">Cars Collected</div>
+                    <div class="progress progress-thin mt-2">
+                        <div class="progress-bar bg-primary" role="progressbar" style="width: 75%"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card animate__animated animate__fadeInUp">
+                    <i class="fas fa-clock feature-icon"></i>
+                    <div class="stat-number" id="lastRun">12h</div>
+                    <div class="stat-label">Since Last Run</div>
+                    <div class="progress progress-thin mt-2">
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: 45%"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card animate__animated animate__fadeInRight">
+                    <i class="fas fa-check-circle feature-icon"></i>
+                    <div class="stat-number" id="successRate">98%</div>
+                    <div class="stat-label">Success Rate</div>
+                    <div class="progress progress-thin mt-2">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 98%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fas fa-chart-line me-2"></i>Scraping Activity</h5>
+                        <p class="text-muted">Recent scraping performance metrics</p>
+                        <canvas id="activityChart" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fas fa-tasks me-2"></i>Recent Operations</h5>
+                        <p class="text-muted">Latest scraping jobs and status</p>
+                        <div class="list-group">
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="status-indicator status-active me-2"></span>
+                                    <strong>Data Collection</strong>
+                                </div>
+                                <span class="badge bg-primary rounded-pill">Running</span>
+                            </div>
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="status-indicator status-inactive me-2"></span>
+                                    <strong>Data Cleaning</strong>
+                                </div>
+                                <span class="badge bg-secondary rounded-pill">Pending</span>
+                            </div>
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="statusMessage" class="alert mt-4 d-none animate__animated animate__fadeInUp"></div>
+    </div>
+
+    <a href="{{ url_for('predict') }}" class="floating-btn btn btn-primary">
+        <i class="fas fa-chart-bar"></i>
+    </a>
+
+    <footer class="container mt-5 mb-4 text-center text-muted">
+        <p>Scraper Car Dashboard &copy; 2023 | Powered by Flask</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const body = document.body;
+        let currentTheme = localStorage.getItem('theme') || 'light';
+
+        const setTheme = (theme) => {
+            body.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            if (theme === 'dark') {
+                themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+            } else {
+                themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+            }
+        };
+
+        setTheme(currentTheme);
+
+        themeToggle.addEventListener('click', () => {
+            currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+            setTheme(currentTheme);
+        });
+
+        // Initialize chart
+        const ctx = document.getElementById('activityChart').getContext('2d');
+        const activityChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Cars Collected',
+                    data: [120, 190, 170, 210, 240, 180, 250],
+                    borderColor: '#18BBF7',
+                    backgroundColor: 'rgba(24, 187, 247, 0.1)',
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Scraper button functionality
+        document.getElementById('startScraper').addEventListener('click', async () => {
+            const statusMessage = document.getElementById('statusMessage');
+            const button = document.getElementById('startScraper');
+            
+            // Show loading state
+            button.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Processing...';
+            button.disabled = true;
+            
+            // Update status indicator
+            const statusIndicator = document.querySelector('.status-indicator');
+            statusIndicator.classList.remove('status-active');
+            statusIndicator.classList.add('status-processing');
+            
+            statusMessage.classList.add('d-none');
+            
+            try {
+                const response = await fetch('/start-scraper', { method: 'POST' });
+                const data = await response.json();
+                
+                statusMessage.classList.remove('d-none', 'alert-danger', 'alert-success');
+                statusMessage.classList.add('animate__animated', 'animate__fadeInUp');
+                
+                if (data.error) {
+                    statusMessage.classList.add('alert-danger');
+                    statusMessage.innerHTML = `<i class="fas fa-exclamation-circle me-2"></i> Error: ${data.error}`;
+                } else {
+                    statusMessage.classList.add('alert-success');
+                    statusMessage.innerHTML = `<i class="fas fa-check-circle me-2"></i> ${data.message}`;
+                    
+                    // Update stats with animation
+                    animateValue('dataCount', 1248, 1420, 1000);
+                    document.getElementById('lastRun').textContent = '0h';
+                    animateValue('successRate', 98, 99, 1000);
+                }
+            } catch (error) {
+                statusMessage.classList.remove('d-none');
+                statusMessage.classList.add('alert-danger');
+                statusMessage.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i> An error occurred while starting the scraper.';
+            } finally {
+                // Reset button and status indicator
+                button.innerHTML = '<i class="fas fa-play me-2"></i> Start Scraper';
+                button.disabled = false;
+                
+                statusIndicator.classList.remove('status-processing');
+                statusIndicator.classList.add('status-active');
+                
+                // Update chart with new data
+                setTimeout(() => {
+                    activityChart.data.datasets[0].data = [120, 190, 170, 210, 240, 180, 280];
+                    activityChart.update();
+                }, 500);
+            }
+        });
+
+        // Helper function for number animation
+        function animateValue(id, start, end, duration) {
+            const obj = document.getElementById(id);
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                const value = Math.floor(progress * (end - start) + start);
+                obj.innerHTML = value.toLocaleString();
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        // Simulate initial data loading
+        setTimeout(() => {
+            animateValue('dataCount', 0, 1248, 1500);
+            animateValue('successRate', 0, 98, 1500);
+        }, 500);
+    </script>
+</body>
+
+</html>

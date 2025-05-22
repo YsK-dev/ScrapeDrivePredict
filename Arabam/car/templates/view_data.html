@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Listings</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+
+        .data-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        .table {
+            font-size: 0.9rem;
+        }
+
+        .table th {
+            background-color: #f8f9fa;
+            position: sticky;
+            top: 0;
+            white-space: nowrap;
+        }
+
+        .table td {
+            vertical-align: middle;
+        }
+
+        .car-card {
+            margin-bottom: 20px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .car-card .card-header {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+
+        .car-card .card-body {
+            padding: 15px;
+        }
+
+        .car-card .price {
+            color: #28a745;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .car-card .details {
+            margin-top: 10px;
+        }
+
+        .car-card .details span {
+            margin-right: 15px;
+        }
+
+        .filter-container {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Car Listings</h2>
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">Back to Home</a>
+        </div>
+
+        {% if error %}
+        <div class="alert alert-danger">
+            <h4>Error Loading Data</h4>
+            <p>{{ error }}</p>
+            <p>Please try scraping data first or check if the data file exists.</p>
+        </div>
+        {% elif data %}
+        <div class="filter-container">
+            <div class="row">
+                <div class="col-md-3">
+                    <input type="text" class="form-control" id="brandFilter" placeholder="Filter by brand...">
+                </div>
+                <div class="col-md-3">
+                    <input type="text" class="form-control" id="modelFilter" placeholder="Filter by model...">
+                </div>
+                <div class="col-md-3">
+                    <input type="text" class="form-control" id="priceFilter" placeholder="Filter by price...">
+                </div>
+                <div class="col-md-3">
+                    <input type="text" class="form-control" id="yearFilter" placeholder="Filter by year...">
+                </div>
+            </div>
+        </div>
+
+        <div class="data-container">
+            <table id="carTable" class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>Brand</th>
+                        <th>Model</th>
+                        <th>Year</th>
+                        <th>Price</th>
+                        <th>Mileage</th>
+                        <th>Location</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for car in data %}
+                    <tr>
+                        <td>{{ car.brand }}</td>
+                        <td>{{ car.model }}</td>
+                        <td>{{ car.year }}</td>
+                        <td class="price">{{ car.ad_price }}</td>
+                        <td>{{ car.mileage }}</td>
+                        <td>{{ car.ad_loc1 }}, {{ car.ad_loc2 }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="showDetails('{{ car.ad_Id }}')">
+                                View Details
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <h4>No Data Available</h4>
+            <p>Please start scraping to collect data. Click the "Start Scraper" button on the home page.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            var table = $('#carTable').DataTable({
+                "pageLength": 25,
+                "order": [[3, "desc"]], // Sort by price by default
+                "language": {
+                    "search": "Search all columns:"
+                }
+            });
+
+            // Add filtering functionality
+            $('#brandFilter, #modelFilter, #priceFilter, #yearFilter').on('keyup', function () {
+                table.column($(this).data('column')).search(this.value).draw();
+            });
+        });
+
+        function showDetails(carId) {
+            // Implement detailed view functionality
+            console.log('Showing details for car:', carId);
+        }
+    </script>
+</body>
+
+</html>

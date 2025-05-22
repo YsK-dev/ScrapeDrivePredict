@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Araç Fiyat Tahmini</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css"/>
+
+    <style>
+        body {
+            background: #f2f2f2;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .form-container {
+            max-width: 700px;
+            margin: 50px auto;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 1rem;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        .feature-icon {
+            font-size: 1.5rem;
+            color: #007bff;
+            margin-right: 10px;
+        }
+        .price-card {
+            border-radius: 1rem;
+            background: #fff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        .price-value {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        .loading-spinner {
+            width: 3rem;
+            height: 3rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container form-container">
+    <h1 class="text-center mb-4">Araç Fiyat Tahmini</h1>
+
+    <!-- Form -->
+    <form id="predictionForm">
+        <div class="mb-3">
+            <label for="carUrl" class="form-label">Araç URL'si</label>
+            <input type="url" class="form-control" id="carUrl" name="url" required
+                   placeholder="Örnek: https://www.arabam.com/ikinci-el/otomobil/...">
+            <div class="form-text">Arabam.com'dan araç ilanının tam URL'sini girin</div>
+        </div>
+        <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-primary">Fiyat Tahmini Yap</button>
+        </div>
+    </form>
+
+    <!-- Features Section -->
+    <div class="glass-card p-4 mb-4 animate__animated animate__fadeIn">
+        <h5 class="fw-bold mb-3"><i class="bi bi-stars"></i> Sistem Özellikleri</h5>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-lightning-charge feature-icon"></i>
+                    <span>Anlık fiyat analizi</span>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-bar-chart-line feature-icon"></i>
+                    <span>Piyasa değeri karşılaştırması</span>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-diagram-3 feature-icon"></i>
+                    <span>100+ parametre değerlendirmesi</span>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-shield-check feature-icon"></i>
+                    <span>Güvenilir tahmin algoritması</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Result Section -->
+    <div id="resultContainer" class="glass-card p-4 mb-4" style="display: none;">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold mb-0"><i class="bi bi-speedometer2"></i> Tahmin Sonuçları</h4>
+            <span id="confidenceBadge" class="badge bg-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Tahmin güvenilirlik seviyesi">
+                <i class="bi bi-emoji-smile"></i> %75 Güvenilir
+            </span>
+        </div>
+
+        <!-- Price Comparison -->
+        <div class="row mb-4">
+            <div class="col-md-6 mb-3">
+                <div class="price-card actual-price p-4 h-100">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="bi bi-tag fs-4 me-2"></i>
+                        <h5 class="mb-0">İlan Fiyatı</h5>
+                    </div>
+                    <div class="price-value" id="actualPrice">-</div>
+                    <div class="text-muted mt-1">Satıcının belirlediği fiyat</div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="price-card predicted-price p-4 h-100">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="bi bi-calculator fs-4 me-2"></i>
+                        <h5 class="mb-0">Tahmini Fiyat</h5>
+                    </div>
+                    <div class="price-value" id="predictedPrice">-</div>
+                    <div class="text-muted mt-1">Sistemimizin hesapladığı değer</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Price Difference -->
+        <div class="text-center mb-4 p-3 bg-light rounded">
+            <h5 class="mb-2">Fiyat Farkı</h5>
+            <div class="fs-3 fw-bold" id="priceDifference">-</div>
+            <div class="fs-5" id="priceDifferencePercentage">-</div>
+        </div>
+
+        <!-- Vehicle Details -->
+        <div class="mb-3">
+            <h5 class="fw-bold"><i class="bi bi-card-checklist"></i> Araç Detayları</h5>
+            <div class="bg-light p-3 rounded" id="carDetails"></div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-flex justify-content-between mt-4">
+            <button class="btn btn-outline-secondary" id="newEstimationBtn">
+                <i class="bi bi-arrow-repeat"></i> Yeni Tahmin
+            </button>
+            <div>
+                <button class="btn btn-outline-primary me-2" id="saveResultBtn">
+                    <i class="bi bi-bookmark"></i> Kaydet
+                </button>
+                <button class="btn btn-primary" id="shareResultBtn">
+                    <i class="bi bi-share"></i> Paylaş
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Message -->
+    <div id="errorContainer" class="alert alert-danger glass-card" style="display: none;">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-exclamation-triangle-fill me-2 fs-4"></i>
+            <div id="errorMessage"></div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loadingContainer" class="text-center py-5" style="display: none;">
+        <div class="spinner-border loading-spinner text-primary" role="status">
+            <span class="visually-hidden">Yükleniyor...</span>
+        </div>
+        <h5 class="mt-3">Araç bilgileri analiz ediliyor...</h5>
+        <p class="text-muted">Bu işlem birkaç saniye sürebilir</p>
+        <div class="progress mt-3" style="height: 8px;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 45%"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- App Logic -->
+<script>
+document.getElementById('predictionForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const url = document.getElementById('carUrl').value;
+    const resultContainer = document.getElementById('resultContainer');
+    const errorContainer = document.getElementById('errorContainer');
+    const errorMessage = document.getElementById('errorMessage');
+    const loadingContainer = document.getElementById('loadingContainer');
+
+    resultContainer.style.display = 'none';
+    errorContainer.style.display = 'none';
+    loadingContainer.style.display = 'block';
+
+    try {
+        const response = await fetch('/estimate-price', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: url })
+        });
+
+        const data = await response.json();
+        loadingContainer.style.display = 'none';
+
+        if (data.success) {
+            resultContainer.style.display = 'block';
+            document.getElementById('actualPrice').textContent = data.actual_price;
+            document.getElementById('predictedPrice').textContent = data.predicted_price;
+            document.getElementById('priceDifference').textContent = data.price_difference;
+            document.getElementById('priceDifferencePercentage').textContent = data.price_difference_percentage;
+
+            const carDetails = document.getElementById('carDetails');
+            carDetails.innerHTML = '';
+            for (const [key, value] of Object.entries(data.car_data)) {
+                if (value !== "Unspecified") {
+                    const div = document.createElement('div');
+                    div.className = 'mb-2';
+                    div.innerHTML = `<strong>${key.replace(/_/g, ' ').toUpperCase()}:</strong> ${value}`;
+                    carDetails.appendChild(div);
+                }
+            }
+        } else {
+            errorContainer.style.display = 'block';
+            errorMessage.textContent = data.error;
+        }
+    } catch (err) {
+        loadingContainer.style.display = 'none';
+        errorContainer.style.display = 'block';
+        errorMessage.textContent = 'İstek işlenirken bir hata oluştu.';
+    }
+});
+</script>
+</body>
+</html>
